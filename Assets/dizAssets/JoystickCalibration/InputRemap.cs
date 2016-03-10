@@ -4,20 +4,25 @@ using System.Collections.Generic;
 
 public class InputRemap {
 
-	public class InputMap{
-
+	public class InputMap
+	{
 		public float inMin = -1;
 		public float inMax = 1;
 		public float outMin = -1;
 		public float outMax = 1;
 
+		public float center = 0;
+
 		public bool invert = false;
 		public float dead = 0.0f;
+
+		public float damping = 0.0f;
+		public float newOutput = 0.0f;
 	}
 
 	public static Dictionary<string, InputMap> dic = new Dictionary<string, InputMap>();
 
-	public static void SetMap(string name, float inMin, float inMax, float outMin = -1.0f, float outMax = 1.0f, bool invert = false, float dead = 0.0f)
+	public static void SetMap(string name, float inMin, float inMax, float outMin = -1.0f, float outMax = 1.0f, bool invert = false, float dead = 0.0f, float damping = 0.0f, float center = 0.0f)
 	{
 		InputMap map = new InputMap ();
 		map.inMin = inMin;
@@ -26,8 +31,18 @@ public class InputRemap {
 		map.outMax = outMax;
 		map.invert = invert;
 		map.dead = dead;
+		map.damping = damping;
+		map.center = center;
+
 		dic [name] = map;
 	}
+
+	public static void SetMap(InputMap map, float inMin, float inMax)
+	{
+		map.inMin = inMin;
+		map.inMax = inMax;
+	}
+
 	public static InputMap GetMap(string name)
 	{
 		if (dic == null) {
@@ -54,21 +69,52 @@ public class InputRemap {
 			float inMax = map.inMax;
 			float outMin = map.outMin;
 			float outMax = map.outMax;
-			float v = Remap(rawInput, inMin, inMax, outMin, outMax);
+
+			//float v = Remap(rawInput, inMin, inMax, outMin, outMax);
+
+			float dead = map.dead;
+			float v = 0;
+			float center = map.center;
+			if (rawInput < center - dead) {
+				v = Remap (rawInput, inMin, center - dead, outMin, 0);
+			}else if(rawInput > center + dead){
+				v = Remap (rawInput, center + dead, inMax , 0, outMax);
+			}
 
 			if(float.IsNaN(v)){
 				v = 0;
 			}
-					
-//						if(useClamp){
+
 			v = Mathf.Clamp(v, outMin, outMax);
-//						}
-			float dead = map.dead;
-			if (Mathf.Abs (v) < dead) {
-				v = 0;
+
+			float damping = map.damping;
+			if (damping != 0) {
+				map.newOutput = Mathf.Lerp (map.newOutput, v, Time.deltaTime * damping);
+			}else{
+				map.newOutput = v;
 			}
 
-			return v * (map.invert ? -1 : 1);
+			float output = map.newOutput;
+			if ( Mathf.Abs (output) < dead * 0.15f) {
+				output = 0;
+			}
+			return output * (map.invert ? -1 : 1);
+//
+//			float dead = map.dead;
+//			if (Mathf.Abs (v) < dead) {
+//				v = 0;
+//			}
+//
+//			float damping = map.damping;
+//			if (damping != 0) {
+//				map.newOutput = Mathf.Lerp (map.newOutput, v, Time.deltaTime * damping);
+//				if ( Mathf.Abs (map.newOutput) < dead * 0.001f) {
+//					map.newOutput = 0;
+//				}
+//			}else{
+//				map.newOutput = v;
+//			}
+//			return map.newOutput * (map.invert ? -1 : 1);
 		}
 		return 0;
 	}
@@ -95,6 +141,8 @@ public class InputRemap {
 		bool invert = false;
 
 		float dead = 0;
+		float damping = 0;
+		float center = 0;
 
 		if (PlayerPrefs.HasKey (name + "_ramap_inMin")) {
 			inMin = PlayerPrefs.GetFloat (name + "_ramap_inMin");
@@ -106,8 +154,12 @@ public class InputRemap {
 			invert = (PlayerPrefs.GetInt (name + "_ramap_invert") == 1);
 
 			dead = PlayerPrefs.GetFloat (name + "_ramap_dead");
+
+			damping = PlayerPrefs.GetFloat (name + "_ramap_damping");
+
+			center = PlayerPrefs.GetFloat (name + "_ramap_center");
 		}
-		SetMap (name, inMin, inMax, outMin, outMax, invert, dead);
+		SetMap (name, inMin, inMax, outMin, outMax, invert, dead, damping, center);
 	}
 	public static void SaveMap(string name)
 	{
@@ -122,6 +174,10 @@ public class InputRemap {
 		PlayerPrefs.SetInt (name + "_ramap_invert", (map.invert ? 1 : 0));
 
 		PlayerPrefs.SetFloat (name + "_ramap_dead", map.dead);
+
+		PlayerPrefs.SetFloat (name + "_ramap_damping", map.damping);
+
+		PlayerPrefs.SetFloat (name + "_ramap_center", map.center);
 	}
 
 	public static void DeleteMap(string name)
@@ -135,5 +191,10 @@ public class InputRemap {
 		PlayerPrefs.DeleteKey (name + "_ramap_invert");
 
 		PlayerPrefs.DeleteKey (name + "_ramap_dead");
+
+		PlayerPrefs.DeleteKey (name + "_ramap_damping");
+
+		PlayerPrefs.DeleteKey (name + "_ramap_center");
+
 	}
 }

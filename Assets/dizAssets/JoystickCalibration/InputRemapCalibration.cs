@@ -12,13 +12,13 @@ public class InputRemapCalibration : MonoBehaviour
 
 	public float rawInput = 0.0f;
 
-	public string name = "Horizontal";
+	public string axis_name = "Horizontal";
 	
 	bool isCalibrate = false;
 
 	void Update ()
 	{
-		rawInput = Input.GetAxisRaw (name);
+		rawInput = Input.GetAxisRaw (axis_name);
 
 		if (isCalibrate) {
 			if (rawInput < inputMin) {
@@ -28,8 +28,9 @@ public class InputRemapCalibration : MonoBehaviour
 				inputMax = rawInput;
 			}
 
-			InputRemap.InputMap map = InputRemap.GetMap (name);
-			InputRemap.SetMap (name, inputMin, inputMax, map.outMin, map.outMax, map.invert);
+			InputRemap.InputMap map = InputRemap.GetMap (axis_name);
+			InputRemap.SetMap (map, inputMin, inputMax);
+			//InputRemap.SetMap (name, inputMin, inputMax, map.outMin, map.outMax, map.invert);
 		}
 	}
 
@@ -49,7 +50,7 @@ public class InputRemapCalibration : MonoBehaviour
 	public void DrawGUI ()
 	{
 		GUILayout.Label ("####### calibration ########");
-		GUILayout.Label ("name: " + name);
+		GUILayout.Label ("name: " + axis_name);
 		if (GUILayout.Button (isCalibrate ? "EndCalibrate" : "BeginCalibrate")) {
 			if (isCalibrate) {
 				EndCalibrate ();
@@ -57,12 +58,25 @@ public class InputRemapCalibration : MonoBehaviour
 				BeginCalibrate ();
 			}
 		}
-		InputRemap.InputMap map = InputRemap.GetMap (name);
+		InputRemap.InputMap map = InputRemap.GetMap (axis_name);
 
-		GUILayout.Label ("input:" + rawInput);
-		GUILayout.Label ("output: " + InputRemap.GetAxisRaw (name));
+		GUILayout.Label ("input:" + rawInput.ToString("0.0000"));
+		GUILayout.Label ("output: " + InputRemap.GetAxisRaw (axis_name).ToString("0.0000"));
 		map.invert = GUILayout.Toggle (map.invert, "invert");
 
+		//---------------------
+		GUILayout.BeginHorizontal ();
+		GUILayout.Label ("center:", GUILayout.Width(100));
+		float center = map.center;
+		center = float.Parse( GUILayout.TextField (center.ToString ("0.00")) );
+		map.center = center;
+		if (GUILayout.Button ("GetCenter")) {
+			map.center = rawInput;
+		}
+		GUILayout.EndHorizontal ();
+
+		//---------------------
+		GUILayout.BeginHorizontal ();
 		// min / max
 		float inputMin = map.inMin;
 		float inputMax = map.inMax;
@@ -79,6 +93,10 @@ public class InputRemapCalibration : MonoBehaviour
 		map.inMax = inputMax;
 		GUILayout.EndHorizontal ();
 
+		GUILayout.EndHorizontal ();
+
+		//---------------------
+		GUILayout.BeginHorizontal ();
 		// dead
 		float dead = map.dead;
 
@@ -88,6 +106,15 @@ public class InputRemapCalibration : MonoBehaviour
 		map.dead = dead;
 		GUILayout.EndHorizontal ();
 
+		// damping
+		float damping = map.damping;
 
+		GUILayout.BeginHorizontal ();
+		GUILayout.Label ("damping:", GUILayout.Width(100));
+		damping = float.Parse( GUILayout.TextField (damping.ToString ("0.00")) );
+		map.damping = damping;
+		GUILayout.EndHorizontal ();
+
+		GUILayout.EndHorizontal ();
 	}
 }
