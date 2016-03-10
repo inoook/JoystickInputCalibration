@@ -6,7 +6,7 @@
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace></RootNamespace>
-    <ProjectGuid>{8B7CB7E5-9B0E-0DC9-78F8-242C604748BC}</ProjectGuid>
+    <ProjectGuid>{B7712FDD-ACBE-2D2C-7C23-96C84D4429D0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Assembly-CSharp</AssemblyName>
@@ -45,9 +45,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\JoystickSetting.cs" />
-     <Compile Include="Assets\dizAssets\InputRemap.cs" />
-     <Compile Include="Assets\dizAssets\InputRemapCalibration.cs" />
+     <Compile Include="Assets\dizAssets\JoystickCalibration\InputRemap.cs" />
+     <Compile Include="Assets\dizAssets\JoystickCalibration\InputRemapCalibration.cs" />
+     <Compile Include="Assets\dizAssets\JoystickCalibration\sample\JoystickSetting.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>

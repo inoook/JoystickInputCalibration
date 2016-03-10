@@ -10,26 +10,22 @@ public class InputRemap {
 		public float inMax = 1;
 		public float outMin = -1;
 		public float outMax = 1;
-//
-//				public InputMap(float inMin_, float inMax_, float outMin_, float outMax_)
-//				{
-//						inMin = inMin_;
-//						inMax = inMax_;
-//						outMin = outMin_;
-//						outMax = outMax_;	
-//				}
+
+		public bool invert = false;
+		public float dead = 0.0f;
 	}
 
 	public static Dictionary<string, InputMap> dic = new Dictionary<string, InputMap>();
 
-	public static void SetMap(string name, float inMin, float inMax, float outMin = -1.0f, float outMax = 1.0f)
+	public static void SetMap(string name, float inMin, float inMax, float outMin = -1.0f, float outMax = 1.0f, bool invert = false, float dead = 0.0f)
 	{
-//				dic [name] = new InputMap (inMin, inMax, outMin, outMax);
 		InputMap map = new InputMap ();
 		map.inMin = inMin;
 		map.inMax = inMax;
 		map.outMin = outMin;
 		map.outMax = outMax;
+		map.invert = invert;
+		map.dead = dead;
 		dic [name] = map;
 	}
 	public static InputMap GetMap(string name)
@@ -52,7 +48,8 @@ public class InputRemap {
 		if (dic.ContainsKey (name)) {
 			InputMap map = dic [name];
 
-			float rawInput = Input.GetAxis(name);
+//			float rawInput = Input.GetAxis(name);
+			float rawInput = Input.GetAxisRaw(name);
 			float inMin = map.inMin;
 			float inMax = map.inMax;
 			float outMin = map.outMin;
@@ -66,8 +63,12 @@ public class InputRemap {
 //						if(useClamp){
 			v = Mathf.Clamp(v, outMin, outMax);
 //						}
+			float dead = map.dead;
+			if (Mathf.Abs (v) < dead) {
+				v = 0;
+			}
 
-			return v;
+			return v * (map.invert ? -1 : 1);
 		}
 		return 0;
 	}
@@ -91,14 +92,22 @@ public class InputRemap {
 		float outMin = -1;
 		float outMax = 1;
 
+		bool invert = false;
+
+		float dead = 0;
+
 		if (PlayerPrefs.HasKey (name + "_ramap_inMin")) {
 			inMin = PlayerPrefs.GetFloat (name + "_ramap_inMin");
 			inMax = PlayerPrefs.GetFloat (name + "_ramap_inMax");
 
 			outMin = PlayerPrefs.GetFloat (name + "_ramap_outMin");
 			outMax = PlayerPrefs.GetFloat (name + "_ramap_outMax");
+
+			invert = (PlayerPrefs.GetInt (name + "_ramap_invert") == 1);
+
+			dead = PlayerPrefs.GetFloat (name + "_ramap_dead");
 		}
-		SetMap (name, inMin, inMax, outMin, outMax);
+		SetMap (name, inMin, inMax, outMin, outMax, invert, dead);
 	}
 	public static void SaveMap(string name)
 	{
@@ -109,6 +118,10 @@ public class InputRemap {
 
 		PlayerPrefs.SetFloat (name + "_ramap_outMin", map.outMin);
 		PlayerPrefs.SetFloat (name + "_ramap_outMax", map.outMax);
+
+		PlayerPrefs.SetInt (name + "_ramap_invert", (map.invert ? 1 : 0));
+
+		PlayerPrefs.SetFloat (name + "_ramap_dead", map.dead);
 	}
 
 	public static void DeleteMap(string name)
@@ -118,5 +131,9 @@ public class InputRemap {
 
 		PlayerPrefs.DeleteKey (name + "_ramap_outMin");
 		PlayerPrefs.DeleteKey (name + "_ramap_outMax");
+
+		PlayerPrefs.DeleteKey (name + "_ramap_invert");
+
+		PlayerPrefs.DeleteKey (name + "_ramap_dead");
 	}
 }

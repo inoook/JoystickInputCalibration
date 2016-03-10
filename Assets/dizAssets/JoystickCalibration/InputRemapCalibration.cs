@@ -27,7 +27,9 @@ public class InputRemapCalibration : MonoBehaviour
 			if (rawInput > inputMax) {
 				inputMax = rawInput;
 			}
-			InputRemap.SetMap (name, inputMin, inputMax);
+
+			InputRemap.InputMap map = InputRemap.GetMap (name);
+			InputRemap.SetMap (name, inputMin, inputMax, map.outMin, map.outMax, map.invert);
 		}
 	}
 
@@ -59,21 +61,31 @@ public class InputRemapCalibration : MonoBehaviour
 
 		GUILayout.Label ("input:" + rawInput);
 		GUILayout.Label ("output: " + InputRemap.GetAxisRaw (name));
+		map.invert = GUILayout.Toggle (map.invert, "invert");
 
+		// min / max
 		float inputMin = map.inMin;
 		float inputMax = map.inMax;
-
-//		GUILayout.Label ("inputMin: " + inputMin);
-//		GUILayout.Label ("inputMax: " + inputMax);
 
 		GUILayout.BeginHorizontal ();
 		GUILayout.Label ("inputMin:", GUILayout.Width(100));
 		inputMin = float.Parse( GUILayout.TextField (inputMin.ToString ("0.00")) );
+		map.inMin = inputMin;
 		GUILayout.EndHorizontal ();
 
 		GUILayout.BeginHorizontal ();
 		GUILayout.Label ("inputMax:", GUILayout.Width(100));
 		inputMax = float.Parse( GUILayout.TextField (inputMax.ToString ("0.00")) );
+		map.inMax = inputMax;
+		GUILayout.EndHorizontal ();
+
+		// dead
+		float dead = map.dead;
+
+		GUILayout.BeginHorizontal ();
+		GUILayout.Label ("dead:", GUILayout.Width(100));
+		dead = float.Parse( GUILayout.TextField (dead.ToString ("0.00")) );
+		map.dead = dead;
 		GUILayout.EndHorizontal ();
 
 
