@@ -17,7 +17,8 @@ public class InputRemap {
 		public float dead = 0.0f;
 
 		public float damping = 0.0f;
-		public float newOutput = 0.0f;
+
+		public float output = 0.0f;
 	}
 
 	public static Dictionary<string, InputMap> dic = new Dictionary<string, InputMap>();
@@ -87,14 +88,15 @@ public class InputRemap {
 
 			v = Mathf.Clamp(v, outMin, outMax);
 
+			// damping
 			float damping = map.damping;
 			if (damping != 0) {
-				map.newOutput = Mathf.Lerp (map.newOutput, v, Time.deltaTime * damping);
+				map.output = Mathf.Lerp (map.output, v, Time.deltaTime * damping);
 			}else{
-				map.newOutput = v;
+				map.output = v;
 			}
 
-			float output = map.newOutput;
+			float output = map.output;
 			if ( Mathf.Abs (output) < dead * 0.15f) {
 				output = 0;
 			}
