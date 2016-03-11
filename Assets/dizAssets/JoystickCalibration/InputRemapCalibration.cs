@@ -60,8 +60,11 @@ public class InputRemapCalibration : MonoBehaviour
 		}
 		InputRemap.InputMap map = InputRemap.GetMap (axis_name);
 
-		GUILayout.Label ("input:" + rawInput.ToString("0.0000"));
-		GUILayout.Label ("output: " + InputRemap.GetAxisRaw (axis_name).ToString("0.0000"));
+		GUIStyle style = new GUIStyle ();
+		style.fontSize = 20;
+		style.normal.textColor = Color.white;
+		GUILayout.Label ("input:\t" + rawInput.ToString("0.0000"), style);
+		GUILayout.Label ("output:\t" + InputRemap.GetAxisRaw (axis_name).ToString("0.0000"), style);
 		map.invert = GUILayout.Toggle (map.invert, "invert");
 
 		//---------------------
